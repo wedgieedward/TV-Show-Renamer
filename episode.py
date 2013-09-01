@@ -4,8 +4,8 @@ import re
 
 DEV_LOGGER = logging.getLogger("Tv_show")
 
-DESIRED_REGEX = r'.*\.((s|S)\d\d((e|E)\d\d)(-(e|E)\d\d)?)\..*'
-KNOWN_REGEX = r'(\d\d|\d\d - \d\d|\d\d\.\d)(( ?- | )(.*))?'
+DESIRED_REGEX = r'.*(\.)?((s|S)\d\d((e|E)\d\d)(-(e|E)\d\d)?)\..*'
+KNOWN_REGEX = r'(\d\d - \d\d|\d\d\.\d|\d\d)(( ?- | )(.*))?'
 EPISODE_REGEX = r'Episode (\d+)'
 
 class Episode(object):
@@ -21,28 +21,29 @@ class Episode(object):
         self._current_name, self._extension = os.path.splitext(current_name)
         self._new_name = None
         self._fixed = False
+        self._already_fixed = False
 
         # An array of episode numbers ['01'] or ['01', '02']
         # useful for two parters
-        self._episode_number = None 
+        self._episode_number = None
 
-    def rename(self):
+    def find_new_name(self):
         """ 
         Rename the episode to the desired regex convention
         name.s01e02.ext
         """
         name_is_desired = re.search(DESIRED_REGEX, self._current_name)
         if name_is_desired:
-            print "%s Is Already In The Desired Format" % self._current_name
             DEV_LOGGER.info("Episode %s is already in desired format" % self._current_name)
+            self._already_fixed = True
             return True
 
         name_known = re.search(KNOWN_REGEX, self._current_name)
         if name_known:
             self._new_name = '%s.' % self.tv_show
-            self._episode_number = name_known.group(1).split('-')
+            self._episode_number = name_known.group(1).replace(' ', '').split('-')
             for episode_number in self._episode_number:
-                self._new_name += 's%se%s' % (self.season, episode_number)
+                self._new_name += 's%se%s.' % (self.season, episode_number)
 
             safe_title = False
             try:
@@ -53,10 +54,11 @@ class Episode(object):
                 pass
 
             if safe_title:
-                self._new_name += '.' + title.lower().replace(' ', '.')
+                self._new_name += title.lower().replace(' ', '.')
+            else:
+                self._new_name = self._new_name[:-1]
             self._new_name += self._extension
-
-            print "Renaming: %s/%s \t to %s" % (self._season_path, self._current_name, self._new_name)
+            self._fixed = True
             return True
 
         episode_known = re.search(EPISODE_REGEX, self._current_name)
@@ -65,10 +67,23 @@ class Episode(object):
             self._episode_number = episode_known.group(1).split('-')
             for episode_number in self._episode_number:
                 self._new_name += 's%se%s' % (self.season, episode_number)
+            self._fixed = True
+            return True
 
         else:
-            print "%s DOES NOT MATCH A KNOWN REGEX" % self._current_name
             return False
+
+    def rename(self):
+        """
+        Does the actual renaming of the files
+        """
+        original = self._season_path + '/' + self._current_name + self._extension
+        new_name = self._season_path + '/' + self._new_name
+        print original + ' \tbecomes \t' + new_name
+        try:
+            os.rename(original, new_name)
+        except OSError:
+            print "FATAL ERROR TRYING TO RENAME %s" % original 
 
 
 
