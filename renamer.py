@@ -15,7 +15,7 @@ class Renamer(object):
         gather tv show information
         """
         for path in self._paths:
-            print "Gathering TV Shows for path %s" % (path, )
+            # print "Gathering TV Shows for path %s" % (path, )
             abs_path = os.path.abspath(path)
             for _dirname, dirnames, _filenames in os.walk(abs_path):
                 for tv_show_name in dirnames:
@@ -26,8 +26,18 @@ class Renamer(object):
         """
         Will go through each tv_show and gather all known episodes
         """
+        # print "Gathering Tv Show Episodes"
         for show in self._shows:
             show.get_episodes()
+
+    def rename_episodes(self):
+        """
+        rename all episodes belonging to each tv show
+        """
+        # print "Renaming tv shows episodes"
+        for show in self._shows:
+            show.rename_episodes()
+
 
 if __name__ == '__main__':
     paths = []
@@ -38,9 +48,12 @@ if __name__ == '__main__':
         # multiple folders to check
         for path in sys.argv[1:]:
             paths += [path]
-    else:
-        print "Invalid number of arguments, please specify root path or paths of your TV Shows"
+    # else:
+        # print "Invalid number of arguments, please specify root path or paths of your TV Shows"
 
     renamer = Renamer(paths)
     renamer.gather_tv_shows()
     renamer.gather_episodes()
+    renamer.rename_episodes()
+
+
