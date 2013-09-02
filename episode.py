@@ -4,7 +4,7 @@ import re
 
 DEV_LOGGER = logging.getLogger("Tv_show")
 
-DESIRED_REGEX = r'.*(\.)?((s|S)\d\d((e|E)\d\d)(-(e|E)\d\d)?)\..*'
+DESIRED_REGEX = r'.*((s|S)\d\d((e|E)\d\d)(-(e|E)\d\d)?)+\..*'
 KNOWN_REGEX = r'(\d\d - \d\d|\d\d\.\d|\d\d)(( ?- | )(.*))?'
 EPISODE_REGEX = r'Episode (\d+)'
 
@@ -28,7 +28,7 @@ class Episode(object):
         self._episode_number = None
 
     def find_new_name(self):
-        """ 
+        """
         Rename the episode to the desired regex convention
         name.s01e02.ext
         """
@@ -83,7 +83,7 @@ class Episode(object):
         try:
             os.rename(original, new_name)
         except OSError:
-            print "FATAL ERROR TRYING TO RENAME %s" % original 
+            print "FATAL ERROR TRYING TO RENAME %s" % original
 
 
 

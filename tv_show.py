@@ -67,7 +67,6 @@ class Tv_show(object):
             else:
                 naming_structures["Episodes That Cannot Be Renamed"] += [episode._current_name]
 
-        
         if len(naming_structures["Episodes To Be Renamed"]) == 0:
             print "No action could be worked out, either all shows correctly named or in an incorrect folder format"
         else:
